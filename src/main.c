@@ -6,11 +6,17 @@
 /*   By: egerin <egerin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/23 15:25:00 by egerin            #+#    #+#             */
-/*   Updated: 2025/04/29 19:52:18 by egerin           ###   ########.fr       */
+/*   Updated: 2025/04/29 22:04:21 by egerin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
+
+void	error_exit(char *str)
+{
+	ft_printf("%s\n", str);
+	exit(0);
+}
 
 void	execute(char *cmd, char **envp)
 {
@@ -22,8 +28,8 @@ void	execute(char *cmd, char **envp)
 	if (execve(path, tab_cmd, envp) == -1)
 	{
 		free_tab(tab_cmd);
-		// free(path);
-		perror("Error\n");
+		ft_printf("error\ncommande not found\n");
+		exit(0);
 	}
 }
 
@@ -48,16 +54,16 @@ int	main(int ac, char **av, char **envp)
 	static t_struct	pipex;
 
 	if (ac != 5)
-		return (1);
+		error_exit("error\n./pipex infile cmd1 outfile cmd2\n");
 	pipex.f1 = open(av[1], O_RDONLY);
 	pipex.f2 = open(av[4], O_CREAT | O_RDWR | O_TRUNC, 0644);
 	if (pipex.f1 < 0 || pipex.f2 < 0)
-		return (-1);
+		error_exit("error file\n");
 	if (pipe(pipex.pipefd) == -1)
-		return (ft_printf("Error\n"), 1);
+		error_exit("Error\n");
 	pipex.pid = fork();
 	if (pipex.pid == -1)
-		return (ft_printf("Error\n"), 1);
+		error_exit("Error\n");
 	else if (pipex.pid == 0)
 		routine_child(av, envp, pipex);
 	else

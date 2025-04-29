@@ -6,7 +6,7 @@
 /*   By: egerin <egerin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 12:23:19 by egerin            #+#    #+#             */
-/*   Updated: 2025/04/29 19:57:05 by egerin           ###   ########.fr       */
+/*   Updated: 2025/04/29 22:12:41 by egerin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,11 +61,11 @@ char	*ft_find_variable(char *str, char **envp)
 
 char	*ft_find_path(char *cmd, char **envp)
 {
-	int i;
-	char *cmd_final;
-	char *path2;
-	char **path;
-	char **tab_cmd;
+	int		i;
+	char	*cmd_final;
+	char	*path2;
+	char	**path;
+	char	**tab_cmd;
 
 	path = ft_split(ft_find_variable("PATH", envp), ':');
 	tab_cmd = ft_split(cmd, ' ');

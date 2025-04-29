@@ -6,10 +6,12 @@
 /*   By: egerin <egerin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/25 14:39:40 by egerin            #+#    #+#             */
-/*   Updated: 2025/03/04 14:16:55 by egerin           ###   ########.fr       */
+/*   Updated: 2025/04/29 22:14:58 by egerin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 #include "libft.h"
+
 int	ft_format(char c, va_list ap)
 {
 	if (c == 'c')
