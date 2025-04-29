@@ -6,7 +6,7 @@
 /*   By: egerin <egerin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/23 15:24:43 by egerin            #+#    #+#             */
-/*   Updated: 2025/04/23 15:36:20 by egerin           ###   ########.fr       */
+/*   Updated: 2025/04/29 19:31:37 by egerin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,5 +26,8 @@ typedef struct s_struct
 	int		f1;
 	int		f2;
 }			t_struct;
+
+void		free_tab(char **tab);
+char		*ft_find_path(char *cmd, char **envp);
 
 #endif

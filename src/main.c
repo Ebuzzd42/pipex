@@ -6,64 +6,46 @@
 /*   By: egerin <egerin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/23 15:25:00 by egerin            #+#    #+#             */
-/*   Updated: 2025/04/23 16:15:06 by egerin           ###   ########.fr       */
+/*   Updated: 2025/04/29 19:52:18 by egerin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-void	ft_freesplit(char **split)
+void	execute(char *cmd, char **envp)
 {
-	int	i;
+	char	**tab_cmd;
+	char	*path;
 
-	i = 0;
-	while (split[i])
+	tab_cmd = ft_split(cmd, ' ');
+	path = ft_find_path(tab_cmd[0], envp);
+	if (execve(path, tab_cmd, envp) == -1)
 	{
-		free(split[i]);
-		i++;
+		free_tab(tab_cmd);
+		// free(path);
+		perror("Error\n");
 	}
-	free(split);
 }
 
 void	routine_child(char **av, char **envp, t_struct pipex)
 {
-	char	*cmd;
-	char	**args;
-
-	close(pipex.pipefd[0]);
 	dup2(pipex.f1, STDIN_FILENO);
 	dup2(pipex.pipefd[1], STDOUT_FILENO);
-	args = ft_split(av[2], ' ');
-	cmd = ft_strdup(args[0]);
-	free(args[0]);
-	args[0][0] = ' ';
-	args[0][1] = '\0';
-	execve(cmd, args, envp);
-	// ft_freesplit(args);
-	// free(cmd);
+	close(pipex.pipefd[0]);
+	execute(av[2], envp);
 }
 
 void	routine_parent(char **av, char **envp, t_struct pipex)
 {
-	char	*cmd;
-	char	**args;
-
-	close(pipex.pipefd[1]);
 	dup2(pipex.f2, STDOUT_FILENO);
 	dup2(pipex.pipefd[0], STDIN_FILENO);
-	args = ft_split(av[3], ' ');
-	cmd = ft_strdup(args[0]);
-	free(args[0]);
-	args[0][0] = ' ';
-	args[0][1] = '\0';
-	execve(cmd, args, envp);
-	// ft_freesplit(args);
-	// free(cmd);
+	close(pipex.pipefd[1]);
+	execute(av[3], envp);
 }
 
 int	main(int ac, char **av, char **envp)
 {
-	t_struct	pipex;
+	static t_struct	pipex;
 
 	if (ac != 5)
 		return (1);
