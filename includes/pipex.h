@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex.h                                            :+:      :+:    :+:   */
+/*   pipex->h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: egerin <egerin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/23 15:24:43 by egerin            #+#    #+#             */
-/*   Updated: 2025/04/29 19:31:37 by egerin           ###   ########.fr       */
+/*   Updated: 2025/05/03 15:13:40 by egerin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,16 @@ typedef struct s_struct
 	int		f2;
 }			t_struct;
 
+typedef struct s_path
+{
+	char	*cmd_final;
+	char	*pathjoin;
+	char	**path;
+	char	**tab_cmd;
+}			t_path;
+
 void		free_tab(char **tab);
 char		*ft_find_path(char *cmd, char **envp);
+void		error_exit(char *str, int n);
 
 #endif

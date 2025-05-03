@@ -6,7 +6,7 @@
 /*   By: egerin <egerin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 12:23:19 by egerin            #+#    #+#             */
-/*   Updated: 2025/04/29 22:12:41 by egerin           ###   ########.fr       */
+/*   Updated: 2025/05/03 21:58:17 by egerin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,31 +59,44 @@ char	*ft_find_variable(char *str, char **envp)
 	return (NULL);
 }
 
+void	split_commands(t_path *x, char *cmd, char **envp)
+{
+	if (!cmd || !*cmd)
+		error_exit("error command\n", 1);
+	x->path = ft_split(ft_find_variable("PATH", envp), ':');
+	x->tab_cmd = ft_split(cmd, ' ');
+	if (!x->path || !x->tab_cmd)
+	{
+		if (x->path)
+			free_tab(x->path);
+		if (x->tab_cmd)
+			free_tab(x->tab_cmd);
+		error_exit("error command\n", 1);
+	}
+}
+
 char	*ft_find_path(char *cmd, char **envp)
 {
+	t_path	x;
 	int		i;
-	char	*cmd_final;
-	char	*path2;
-	char	**path;
-	char	**tab_cmd;
 
-	path = ft_split(ft_find_variable("PATH", envp), ':');
-	tab_cmd = ft_split(cmd, ' ');
+	split_commands(&x, cmd, envp);
 	i = 0;
-	while (path[i])
+	while (x.path[i])
 	{
-		path2 = ft_strjoin(path[i], "/");
-		cmd_final = ft_strjoin(path2, tab_cmd[0]);
-		free(path2);
-		if (access(cmd_final, F_OK | X_OK) == 0)
+		x.pathjoin = ft_strjoin(x.path[i], "/");
+		x.cmd_final = ft_strjoin(x.pathjoin, x.tab_cmd[0]);
+		free(x.pathjoin);
+		if (access(x.cmd_final, F_OK | X_OK) == 0)
 		{
-			free_tab(tab_cmd);
-			return (cmd_final);
+			free_tab(x.tab_cmd);
+			free_tab(x.path);
+			return (x.cmd_final);
 		}
-		free(cmd_final);
+		free(x.cmd_final);
 		i++;
 	}
-	free_tab(path);
-	free_tab(tab_cmd);
+	free_tab(x.tab_cmd);
+	free_tab(x.path);
 	return (cmd);
 }
