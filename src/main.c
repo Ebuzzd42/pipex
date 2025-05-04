@@ -6,7 +6,7 @@
 /*   By: egerin <egerin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/23 15:25:00 by egerin            #+#    #+#             */
-/*   Updated: 2025/05/03 21:58:09 by egerin           ###   ########.fr       */
+/*   Updated: 2025/05/04 13:35:25 by egerin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,14 +24,14 @@ void	execute(char *cmd, char **envp)
 	char	*path;
 
 	if (!cmd || !*cmd)
-		error_exit("error command\n", 1);
+		error_exit("error command not found\n", 127);
 	tab_cmd = ft_split(cmd, ' ');
 	path = ft_find_path(tab_cmd[0], envp);
 	if (execve(path, tab_cmd, envp) == -1)
 	{
 		free_tab(tab_cmd);
-		ft_printf("error\ncommand not found\n");
-		exit(1);
+		write(2, "error execve\n", 13);
+		exit(127);
 	}
 }
 
@@ -60,20 +60,25 @@ void	routine_parent(char **av, char **envp, t_struct pipex)
 int	main(int ac, char **av, char **envp)
 {
 	static t_struct	pipex;
+	int				status;
 
 	if (ac != 5)
 		error_exit("error ./pipex infile cmd1 outfile cmd2\n", 1);
 	pipex.f1 = open(av[1], O_RDONLY);
 	pipex.f2 = open(av[4], O_CREAT | O_RDWR | O_TRUNC, 0644);
 	if (pipex.f1 < 0 || pipex.f2 < 0)
-		error_exit("error file\n", 1);
+		error_exit("error file or permission denied\n", 1);
 	if (pipe(pipex.pipefd) == -1)
-		error_exit("Error\n", 1);
+		error_exit("error pipe\n", 1);
 	pipex.pid = fork();
 	if (pipex.pid == -1)
 		error_exit("Error\n", 1);
 	else if (pipex.pid == 0)
 		routine_child(av, envp, pipex);
 	else
+	{
+		waitpid(pipex.pid, &status, 0);
 		routine_parent(av, envp, pipex);
+	}
+	return (0);
 }
