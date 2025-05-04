@@ -6,7 +6,7 @@
 /*   By: egerin <egerin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/23 15:25:00 by egerin            #+#    #+#             */
-/*   Updated: 2025/05/04 13:35:25 by egerin           ###   ########.fr       */
+/*   Updated: 2025/05/04 16:38:24 by egerin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ void	execute(char *cmd, char **envp)
 	char	**tab_cmd;
 	char	*path;
 
-	if (!cmd || !*cmd)
+	if (!cmd || !*cmd || cmd[0] == ' ')
 		error_exit("error command not found\n", 127);
 	tab_cmd = ft_split(cmd, ' ');
 	path = ft_find_path(tab_cmd[0], envp);
@@ -67,7 +67,7 @@ int	main(int ac, char **av, char **envp)
 	pipex.f1 = open(av[1], O_RDONLY);
 	pipex.f2 = open(av[4], O_CREAT | O_RDWR | O_TRUNC, 0644);
 	if (pipex.f1 < 0 || pipex.f2 < 0)
-		error_exit("error file or permission denied\n", 1);
+		error_exit("error file or permission denied\n", 0);
 	if (pipe(pipex.pipefd) == -1)
 		error_exit("error pipe\n", 1);
 	pipex.pid = fork();
@@ -80,5 +80,8 @@ int	main(int ac, char **av, char **envp)
 		waitpid(pipex.pid, &status, 0);
 		routine_parent(av, envp, pipex);
 	}
-	return (0);
+	close(pipex.f1);
+	close(pipex.f2);
+	close(pipex.pipefd[0]);
+	close(pipex.pipefd[1]);
 }

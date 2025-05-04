@@ -6,7 +6,7 @@
 /*   By: egerin <egerin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/28 12:23:19 by egerin            #+#    #+#             */
-/*   Updated: 2025/05/04 13:35:38 by egerin           ###   ########.fr       */
+/*   Updated: 2025/05/04 16:32:15 by egerin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ char	*ft_find_variable(char *str, char **envp)
 
 void	split_commands(t_path *x, char *cmd, char **envp)
 {
-	if (!cmd || !*cmd)
+	if (!cmd || !*cmd || cmd[0] == ' ')
 		error_exit("error command not found\n", 127);
 	x->path = ft_split(ft_find_variable("PATH", envp), ':');
 	x->tab_cmd = ft_split(cmd, ' ');
