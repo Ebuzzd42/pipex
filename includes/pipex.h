@@ -22,6 +22,7 @@
 typedef struct s_struct
 {
 	pid_t		pid;
+	pid_t		pid2;
 	int			pipefd[2];
 	int			f1;
 	int			f2;
@@ -40,5 +41,6 @@ void			free_tab(char **tab);
 char			*ft_find_path(char *cmd, char **envp);
 void			error_exit(char *str, int n, t_struct *pipex);
 void			close_fd(t_struct *pipex);
+char			*ft_find_variable(char *str, char **envp);
 
 #endif
