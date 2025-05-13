@@ -6,7 +6,7 @@
 /*   By: egerin <egerin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/23 15:25:00 by egerin            #+#    #+#             */
-/*   Updated: 2025/05/13 16:42:07 by egerin           ###   ########.fr       */
+/*   Updated: 2025/05/13 21:10:06 by egerin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,14 +32,16 @@ void	close_fd(t_struct *pipex)
 		close(pipex->pipefd[1]);
 }
 
-void	execute(char *cmd, char **envp, char **av, t_struct *pipex)
+void	execute(char *cmd, char **envp, t_struct *pipex)
 {
 	char	**tab_cmd;
 	char	*path;
+	char	**envp2;
 
-	if (!envp)
+	if (!envp || !*envp)
 	{
-		printf("salut");
+		envp2 = (char *[]){"PATH=/usr/bin:/bin", NULL};
+		envp = envp2;
 	}
 	if (!cmd || !*cmd || cmd[0] == ' ')
 		error_exit("error command not found\n", 127, pipex);
@@ -60,12 +62,6 @@ void	routine_child(char **av, char **envp, t_struct pipex)
 	dup2(pipex.f1, STDIN_FILENO);
 	dup2(pipex.pipefd[1], STDOUT_FILENO);
 	close_fd(&pipex);
-	if (!envp)
-	{
-		execve(av[2], av, envp);
-		perror("execve failed\n");
-		exit(127);
-	}
 	execute(av[2], envp, &pipex);
 }
 
@@ -76,12 +72,6 @@ void	routine_parent(char **av, char **envp, t_struct pipex)
 	dup2(pipex.f2, STDOUT_FILENO);
 	dup2(pipex.pipefd[0], STDIN_FILENO);
 	close_fd(&pipex);
-	if (!envp)
-	{
-		execve(av[3], av, envp);
-		perror("execve failed\n");
-		exit(127);
-	}
 	execute(av[3], envp, &pipex);
 }
 
