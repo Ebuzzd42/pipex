@@ -6,7 +6,7 @@
 /*   By: egerin <egerin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/23 15:25:00 by egerin            #+#    #+#             */
-/*   Updated: 2025/05/13 21:10:06 by egerin           ###   ########.fr       */
+/*   Updated: 2025/05/14 12:38:53 by egerin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,6 @@ void	execute(char *cmd, char **envp, t_struct *pipex)
 		error_exit("error command not found\n", 127, pipex);
 	tab_cmd = ft_split(cmd, ' ');
 	path = ft_find_path(tab_cmd[0], envp);
-	close_fd(pipex);
 	if (execve(path, tab_cmd, envp) == -1)
 	{
 		free_tab(tab_cmd);
@@ -57,21 +56,23 @@ void	execute(char *cmd, char **envp, t_struct *pipex)
 
 void	routine_child(char **av, char **envp, t_struct pipex)
 {
-	close(pipex.f2);
-	close(pipex.pipefd[0]);
 	dup2(pipex.f1, STDIN_FILENO);
 	dup2(pipex.pipefd[1], STDOUT_FILENO);
-	close_fd(&pipex);
+	close(pipex.f1);
+	close(pipex.pipefd[1]);
+	close(pipex.f2);
+	close(pipex.pipefd[0]);
 	execute(av[2], envp, &pipex);
 }
 
 void	routine_parent(char **av, char **envp, t_struct pipex)
 {
-	close(pipex.f1);
-	close(pipex.pipefd[1]);
 	dup2(pipex.f2, STDOUT_FILENO);
 	dup2(pipex.pipefd[0], STDIN_FILENO);
-	close_fd(&pipex);
+	close(pipex.f2);
+	close(pipex.pipefd[0]);
+	close(pipex.f1);
+	close(pipex.pipefd[1]);
 	execute(av[3], envp, &pipex);
 }
 
@@ -79,7 +80,6 @@ int	main(int ac, char **av, char **envp)
 {
 	static t_struct	pipex;
 	int				status;
-	int				status1;
 
 	if (ac != 5)
 		error_exit("error ./pipex infile cmd1 outfile cmd2\n", 1, &pipex);
@@ -101,5 +101,5 @@ int	main(int ac, char **av, char **envp)
 		routine_parent(av, envp, pipex);
 	close_fd(&pipex);
 	waitpid(pipex.pid, &status, 0);
-	waitpid(pipex.pid2, &status1, 0);
+	waitpid(pipex.pid2, &status, 0);
 }
