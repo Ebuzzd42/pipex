@@ -6,56 +6,40 @@
 /*   By: egerin <egerin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/23 15:25:00 by egerin            #+#    #+#             */
-/*   Updated: 2025/05/14 12:38:53 by egerin           ###   ########.fr       */
+/*   Updated: 2025/05/22 16:45:10 by egerin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-void	error_exit(char *str, int n, t_struct *pipex)
-{
-	if (pipex)
-		close_fd(pipex);
-	write(2, str, ft_strlen(str));
-	exit(n);
-}
-
-void	close_fd(t_struct *pipex)
-{
-	if (pipex->f1 >= 0)
-		close(pipex->f1);
-	if (pipex->f2 >= 0)
-		close(pipex->f2);
-	if (pipex->pipefd[0] >= 0)
-		close(pipex->pipefd[0]);
-	if (pipex->pipefd[1] >= 0)
-		close(pipex->pipefd[1]);
-}
-
 void	execute(char *cmd, char **envp, t_struct *pipex)
 {
 	char	**tab_cmd;
 	char	*path;
-	char	**envp2;
 
-	if (!envp || !*envp)
-	{
-		envp2 = (char *[]){"PATH=/usr/bin:/bin", NULL};
-		envp = envp2;
-	}
+	if (!envp || !*envp || path_missing(envp))
+		envp = (char *[]){"PATH=/usr/bin:/bin", NULL};
 	if (!cmd || !*cmd || cmd[0] == ' ')
-		error_exit("error command not found\n", 127, pipex);
+		error_exit("error", 127, pipex);
 	tab_cmd = ft_split(cmd, ' ');
 	path = ft_find_path(tab_cmd[0], envp);
 	if (execve(path, tab_cmd, envp) == -1)
 	{
 		free_tab(tab_cmd);
-		error_exit("error execve failed\n", 127, pipex);
+		perror("pipex");
+		if (errno == ENOENT)
+			exit(127);
+		else if (errno == EACCES)
+			exit(126);
+		else
+			exit(1);
 	}
 }
 
 void	routine_child(char **av, char **envp, t_struct pipex)
 {
+	if (pipex.f1 < 0)
+		pipex.f1 = open("/dev/null", O_RDONLY);
 	dup2(pipex.f1, STDIN_FILENO);
 	dup2(pipex.pipefd[1], STDOUT_FILENO);
 	close(pipex.f1);
@@ -76,30 +60,39 @@ void	routine_parent(char **av, char **envp, t_struct pipex)
 	execute(av[3], envp, &pipex);
 }
 
+void	open_files(char **av, t_struct *pipex)
+{
+	pipex->f1 = open(av[1], O_RDONLY);
+	if (pipex->f1 < 0)
+		perror(av[1]);
+	pipex->f2 = open(av[4], O_CREAT | O_RDWR | O_TRUNC, 0644);
+	if (pipex->f2 < 0)
+	{
+		perror(av[4]);
+		exit(1);
+	}
+}
+
 int	main(int ac, char **av, char **envp)
 {
 	static t_struct	pipex;
-	int				status;
 
 	if (ac != 5)
 		error_exit("error ./pipex infile cmd1 outfile cmd2\n", 1, &pipex);
-	pipex.f1 = open(av[1], O_RDONLY);
-	pipex.f2 = open(av[4], O_CREAT | O_RDWR | O_TRUNC, 0644);
-	if (pipex.f1 < 0 || pipex.f2 < 0)
-		error_exit("error file or permission denied\n", 0, &pipex);
+	open_files(av, &pipex);
 	if (pipe(pipex.pipefd) == -1)
-		error_exit("error pipe\n", 1, &pipex);
+		error_exit("error", 1, &pipex);
 	pipex.pid = fork();
 	if (pipex.pid < 0)
-		error_exit("error fork\n", 1, &pipex);
+		error_exit("error", 1, &pipex);
 	else if (pipex.pid == 0)
 		routine_child(av, envp, pipex);
 	pipex.pid2 = fork();
 	if (pipex.pid2 < 0)
-		error_exit("error fork\n", 1, &pipex);
+		error_exit("error", 1, &pipex);
 	else if (pipex.pid2 == 0)
 		routine_parent(av, envp, pipex);
 	close_fd(&pipex);
-	waitpid(pipex.pid, &status, 0);
-	waitpid(pipex.pid2, &status, 0);
+	while (wait(NULL) > 0)
+		;
 }
